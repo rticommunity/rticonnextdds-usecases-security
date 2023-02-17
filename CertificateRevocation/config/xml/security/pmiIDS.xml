@@ -1,0 +1,38 @@
+<!-- (c) 2023 Copyright, Real-Time Innovations, Inc. (RTI) All rights reserved.
+RTI grants Licensee a license to use, modify, compile, and create derivative
+works of the Software solely in combination with RTI Connext DDS. Licensee
+may redistribute copies of the Software provided that all such copies are
+subject to this License. The Software is provided "as is", with no warranty
+of any type, including any warranty for fitness for any purpose. RTI is
+under no obligation to maintain or support the Software. RTI shall not be
+liable for any incidental or consequential damages arising out of the use or
+inability to use the Software. For purposes of clarity, nothing in this
+License prevents Licensee from using alternate versions of DDS, provided
+that Licensee may not combine or link such alternate versions of DDS with
+the Software. -->
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="http://community.rti.com/schema/7.0.0/dds_security_permissions.xsd">
+    <permissions>
+        <grant name="ShapePublisherC">
+            <subject_name>/C=US/ST=CA/L=Santa Clara/O=Patient Monitoring Innovations/emailAddress=IDS@pmi.com/CN=IDS</subject_name>
+            <validity>
+                <not_before>2022-01-20T00:00:00</not_before>
+                <not_after>2032-01-20T00:00:00</not_after>
+            </validity>
+            <allow_rule>
+                <domains>
+                    <id>0</id>
+                </domains>
+                <publish>
+                    <topics>
+                        <topic>IDS*</topic>
+                    </topics>
+                </publish>
+            </allow_rule>
+            <default>DENY</default>
+        </grant>
+    </permissions>
+</dds>

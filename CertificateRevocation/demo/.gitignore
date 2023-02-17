@@ -1,0 +1,5 @@
+# Build Results
+CMakeBuild/
+USER_QOS_PROFILES.xml
+*.exe
+*.pdb

@@ -1,0 +1,532 @@
+<?xml version="1.0"?>
+<!--
+    (c) 2023 Copyright, Real-Time Innovations, Inc. (RTI) All rights reserved.
+    RTI grants Licensee a license to use, modify, compile, and create derivative
+    works of the Software solely in combination with RTI Connext DDS. Licensee
+    may redistribute copies of the Software provided that all such copies are
+    subject to this License. The Software is provided "as is", with no warranty
+    of any type, including any warranty for fitness for any purpose. RTI is
+    under no obligation to maintain or support the Software. RTI shall not be
+    liable for any incidental or consequential damages arising out of the use or
+    inability to use the Software. For purposes of clarity, nothing in this
+    License prevents Licensee from using alternate versions of DDS, provided
+    that Licensee may not combine or link such alternate versions of DDS with
+    the Software.
+
+    This file is used only when it is in the current working directory or when
+    the environment variable NDDS_QOS_PROFILES is defined and points to this
+    file.
+
+    The profile in this file inherits from the builtin QoS profile
+    BuiltinQosLib::Generic.StrictReliable. That profile, along with all of the
+    other built-in QoS profiles can be found in the
+    BuiltinProfiles.documentationONLY.xml file located in the
+    $NDDSHOME/resource/xml/ directory.
+-->
+<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="https://community.rti.com/schema/7.0.0/rti_dds_qos_profiles.xsd">
+    <!--
+    QoS Library containing the root QoS profile used in this example.
+        A QoS library is a named set of QoS profiles.
+    -->
+    <qos_library name="pmiRootLibrary">
+        <!--
+        QoS profile used to configure secure communication between the the
+        DataWriters and DataReaders used in this example.
+
+        base_name:
+        Communication is reliable because this profile inherits from
+        the built-in profile "BuiltinQosLib::Generic.StrictReliable"
+        -->
+        <qos_profile name="pmiRootSecure" base_name="BuiltinQosLib::Generic.StrictReliable">
+            <base_name>
+                <element>BuiltinQosSnippetLib::Optimization.Discovery.Endpoint.Fast</element>
+                <element>BuiltinQosSnippetLib::Feature.Security.Enable</element>
+            </base_name>
+            <domain_participant_qos>
+                <transport_builtin>
+                    <mask>UDPv4</mask>
+                </transport_builtin>
+                <!--
+                Generic security file locations used by all participants.
+                -->
+                <property>
+                    <value>
+                        <!-- 
+                        Enable key revisions with a history depth of 7 to allow for
+                        DomainParticipants to change and use new Key Material, making
+                        new messages indecipherable to DomainParticipants that have been
+                        removed from the system. This is required for the banish 
+                        functionality demonstrated by this example.
+                        -->
+                        <element>
+                            <name>dds.participant.trust_plugins.key_revision_max_history_depth</name>
+                            <value>7</value>
+                        </element>
+                        <!--
+                        Location of the public identity ca certificate. Make sure
+                        that this points to the correct relative path compared to
+                        this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.auth.identity_ca</name>
+                            <value>file:../config/cert/pmi/ca/pmiIdentityCaCert.pem</value>
+                        </element>
+                        <!--
+                        Location of the public permissions ca certificate. Make sure
+                        that this points to the correct relative path compared to
+                        this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.access.permissions_ca</name>
+                            <value>file:../config/cert/pmi/ca/pmiPermissionsCaCert.pem</value>
+                        </element>
+                        <!--
+                        Location of the signed Governance file. Make sure that this
+                        points to the correct relative path compared to this XML
+                        file.
+                        -->
+                        <element>
+                            <name>dds.sec.access.governance</name>
+                            <value>file:../config/xml/security/signed/pmiSigned_pmiGovernance.p7s</value>
+                        </element>
+                        <!-- 
+                        Location of the Certificate Revocation List. Make sure that this
+                        points to the correct relative path compared to this XML
+                        file.
+                        -->
+                        <element>
+                            <name>com.rti.serv.secure.authentication.crl</name>
+                            <value>file:../config/cert/pmi/ca/crl/pmiIdentityCa.crl</value>
+                        </element>
+                    </value>
+                </property>
+            </domain_participant_qos>
+        </qos_profile>
+    </qos_library>
+    <!--
+    QoS Library containing the application QoS profile used in this example.
+    A QoS library is a named set of QoS profiles.
+    -->
+    <qos_library name="pmiLibrary">
+        <!--
+        QoS profile used to configure secure communication between the one of
+        the Shape Demos and the system. This Shape Demo will be able to Publish
+        and Subscribe to all Shapes.
+
+        base_name:
+        Inheriting from the root secure profile defined above.
+        -->
+        <qos_profile name="ShapesDemoA" base_name="pmiRootLibrary::pmiRootSecure">
+            <!--
+            QoS specified to override the QoS in the base profile. Configures the
+            DataWriter in the example code.
+            -->
+            <datawriter_qos>
+                <publication_name>
+                    <name>ShapesDemoAWriter</name>
+                </publication_name>
+            </datawriter_qos>
+
+            <!--
+            QoS specified to override the QoS in the base profile. Configures the
+            DataReader in the example code.
+            -->
+            <datareader_qos>
+                <subscription_name>
+                    <name>ShapesDemoAReader</name>
+                </subscription_name>
+            </datareader_qos>
+
+            <!--
+            QoS specified to override the QoS in the base profile. Configures the
+            DomainParticipant in the example code.
+            -->
+            <domain_participant_qos>
+                <!--
+                The participant name, if it is set, will be displayed in the RTI
+                tools, making it easier for you to tell one application from 
+                another when you're debugging.
+                -->
+                <participant_name>
+                    <name>ShapesDemoAParticipant</name>
+                </participant_name>
+                <!--
+                Security file locations used by this participant.
+                -->
+                <property>
+                    <value>
+                        <!--
+                        Location of the public identity certificate of this
+                        participant. It should be derived from the identity ca defined
+                        in the root profile. Make sure that this points to the correct
+                        relative path compared to this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.auth.identity_certificate</name>
+                            <value>file:../config/cert/pmi/identities/ShapesDemoA/pmiShapesDemoACert.pem</value>
+                        </element>
+                        <!--
+                        Location of the private key for this participant. Make sure
+                        that this points to the correct relative path compared to
+                        this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.auth.private_key</name>
+                            <value>file:../config/cert/pmi/identities/ShapesDemoA/private/pmiShapesDemoAKey.pem</value>
+                        </element>
+                        <!--
+                        Location of the signed Permission file. Make sure that this
+                        points to the correct relative path compared to this XML
+                        file.
+                        -->
+                        <element>
+                            <name>dds.sec.access.permissions</name>
+                            <value>file:../config/xml/security/signed/signed_pmiShapesDemoA.p7s</value>
+                        </element>
+                    </value>
+                </property>
+            </domain_participant_qos>
+        </qos_profile>
+        <!--
+        QoS profile used to configure secure communication between the one of
+        the Shape Demos and the system. This Shape Demo will only be given
+        permission to Subscribe to all Shapes.
+
+        base_name:
+        Inheriting from the root secure profile defined above.
+        -->
+        <qos_profile name="ShapesDemoB" base_name="pmiRootLibrary::pmiRootSecure">
+            <!--
+            QoS specified to override the QoS in the base profile. Configures the
+            DataReader in the example code.
+            -->
+            <datareader_qos>
+                <subscription_name>
+                    <name>ShapesDemoBReader</name>
+                </subscription_name>
+            </datareader_qos>
+
+            <!--
+            QoS specified to override the QoS in the base profile. Configures the
+            DomainParticipant in the example code.
+            -->
+            <domain_participant_qos>
+                <!--
+                The participant name, if it is set, will be displayed in the RTI
+                tools, making it easier for you to tell one application from 
+                another when you're debugging.
+                -->
+                <participant_name>
+                    <name>ShapesDemoBParticipant</name>
+                </participant_name>
+                <!--
+                Security file locations used by this participant.
+                -->
+                <property>
+                    <value>
+                        <!-- 
+                        Location of the public identity certificate of this
+                        participant. It should be derived from the identity ca defined 
+                        in the root profile. Make sure that this points to the correct
+                        relative path compared to this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.auth.identity_certificate</name>
+                            <value>file:../config/cert/pmi/identities/ShapesDemoB/pmiShapesDemoBCert.pem</value>
+                        </element>
+                        <!-- 
+                        Location of the private key for this participant. Make sure
+                        that this points to the correct relative path compared to
+                        this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.auth.private_key</name>
+                            <value>file:../config/cert/pmi/identities/ShapesDemoB/private/pmiShapesDemoBKey.pem</value>
+                        </element>
+                        <!-- 
+                        Location of the signed Permission file. Make sure that this
+                        points to the correct relative path compared to this XML
+                        file.
+                        -->
+                        <element>
+                            <name>dds.sec.access.permissions</name>
+                            <value>file:../config/xml/security/signed/signed_pmiShapesDemoB.p7s</value>
+                        </element>
+                    </value>
+                </property>
+            </domain_participant_qos>
+        </qos_profile>
+        <!--
+        QoS profile used to configure secure communication between the one of
+        the Shape Publishers and the system. This application will only be
+        given write permission to a single topic.
+        
+        base_name:
+        Inheriting from the root secure profile defined above.
+        -->
+        <qos_profile name="ShapePublisherA" base_name="pmiRootLibrary::pmiRootSecure">
+            <!--
+            QoS specified to override the QoS in the base profile. Configures the
+            DataWriter in the example code.
+            -->
+            <datawriter_qos>
+                <publication_name>
+                    <name>ShapePublisherAWriter</name>
+                </publication_name>
+            </datawriter_qos>
+
+            <!--
+            QoS specified to override the QoS in the base profile. Configures the
+            DomainParticipant in the example code.
+            -->
+            <domain_participant_qos>
+                <!--
+                The participant name, if it is set, will be displayed in the RTI
+                tools, making it easier for you to tell one application from 
+                another when you're debugging.
+                -->
+                <participant_name>
+                    <name>ShapePublisherAParticipant</name>
+                </participant_name>
+                <!--
+                    Security file locations used by this participant.
+                -->
+                <property>
+                    <value>
+                        <!-- 
+                        Location of the public identity certificate of this
+                        participant. It should be derived from the identity ca defined 
+                        in the root profile. Make sure that this points to the correct
+                        relative path compared to this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.auth.identity_certificate</name>
+                            <value>file:../config/cert/pmi/identities/ShapePublisherA/pmiShapePublisherACert.pem</value>
+                        </element>
+                        <!-- 
+                        Location of the private key for this participant. Make sure
+                        that this points to the correct relative path compared to
+                        this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.auth.private_key</name>
+                            <value>file:../config/cert/pmi/identities/ShapePublisherA/private/pmiShapePublisherAKey.pem</value>
+                        </element>
+                        <!-- 
+                        Location of the signed Permission file. Make sure that this
+                        points to the correct relative path compared to this XML
+                        file.
+                        -->
+                        <element>
+                            <name>dds.sec.access.permissions</name>
+                            <value>file:../config/xml/security/signed/signed_pmiShapePublisherA.p7s</value>
+                        </element>
+                    </value>
+                </property>
+            </domain_participant_qos>
+        </qos_profile>
+        <!--
+        QoS profile used to configure secure communication between the one of
+        the Shape Publishers and the system. This application will only be
+        given write permission to a single topic.
+        
+        base_name:
+        Inheriting from the root secure profile defined above.
+        -->
+        <qos_profile name="ShapePublisherB" base_name="pmiRootLibrary::pmiRootSecure">
+            <!--
+            QoS specified to override the QoS in the base profile. Configures the
+            DataWriter in the example code.
+            -->
+            <datawriter_qos>
+                <publication_name>
+                    <name>ShapePublisherBWriter</name>
+                </publication_name>
+            </datawriter_qos>
+
+            <!--
+            QoS specified to override the QoS in the base profile. Configures the
+            DomainParticipant in the example code.
+            -->
+            <domain_participant_qos>
+                <!--
+                The participant name, if it is set, will be displayed in the RTI
+                tools, making it easier for you to tell one application from 
+                another when you're debugging.
+                -->
+                <participant_name>
+                    <name>ShapePublisherBParticipant</name>
+                </participant_name>
+                <!--
+                Security file locations used by this participant.
+                -->
+                <property>
+                    <value>
+                        <!-- 
+                        Location of the public identity certificate of this
+                        participant. It should be derived from the identity ca defined 
+                        in the root profile. Make sure that this points to the correct
+                        relative path compared to this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.auth.identity_certificate</name>
+                            <value>file:../config/cert/pmi/identities/ShapePublisherB/pmiShapePublisherBCert.pem</value>
+                        </element>
+                        <!-- 
+                        Location of the private key for this participant. Make sure
+                        that this points to the correct relative path compared to
+                        this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.auth.private_key</name>
+                            <value>file:../config/cert/pmi/identities/ShapePublisherB/private/pmiShapePublisherBKey.pem</value>
+                        </element>
+                        <!-- 
+                        Location of the signed Permission file. Make sure that this
+                        points to the correct relative path compared to this XML
+                        file.
+                        -->
+                        <element>
+                            <name>dds.sec.access.permissions</name>
+                            <value>file:../config/xml/security/signed/signed_pmiShapePublisherB.p7s</value>
+                        </element>
+                    </value>
+                </property>
+            </domain_participant_qos>
+        </qos_profile>
+        <!--
+        QoS profile used to configure secure communication between the one of
+        the Shape Publishers and the system. This application will only be
+        given write permission to a single topic.
+        
+        base_name:
+        Inheriting from the root secure profile defined above.
+        -->
+        <qos_profile name="ShapePublisherC" base_name="pmiRootLibrary::pmiRootSecure">
+            <!--
+            QoS specified to override the QoS in the base profile. Configures the
+            DataWriter in the example code.
+            -->
+            <datawriter_qos>
+                <publication_name>
+                    <name>ShapePublisherCWriter</name>
+                </publication_name>
+            </datawriter_qos>
+
+            <!--
+            QoS specified to override the QoS in the base profile. Configures the
+            DomainParticipant in the example code.
+            -->
+            <domain_participant_qos>
+                <!--
+                The participant name, if it is set, will be displayed in the RTI
+                tools, making it easier for you to tell one application from 
+                another when you're debugging.
+                -->
+                <participant_name>
+                    <name>ShapePublisherCParticipant</name>
+                </participant_name>
+                <!--
+                Security file locations used by this participant.
+                -->
+                <property>
+                    <value>
+                        <!-- 
+                        Location of the public identity certificate of this
+                        participant. It should be derived from the identity ca defined 
+                        in the root profile. Make sure that this points to the correct
+                        relative path compared to this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.auth.identity_certificate</name>
+                            <value>file:../config/cert/pmi/identities/ShapePublisherC/pmiShapePublisherCCert.pem</value>
+                        </element>
+                        <!-- 
+                        Location of the private key for this participant. Make sure
+                        that this points to the correct relative path compared to
+                        this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.auth.private_key</name>
+                            <value>file:../config/cert/pmi/identities/ShapePublisherC/private/pmiShapePublisherCKey.pem</value>
+                        </element>
+                        <!-- 
+                        Location of the signed Permission file. Make sure that this
+                        points to the correct relative path compared to this XML
+                        file.
+                        -->
+                        <element>
+                            <name>dds.sec.access.permissions</name>
+                            <value>file:../config/xml/security/signed/signed_pmiShapePublisherC.p7s</value>
+                        </element>
+                    </value>
+                </property>
+            </domain_participant_qos>
+        </qos_profile>
+        <qos_profile name="IDS" base_name="pmiRootLibrary::pmiRootSecure">
+            <base_name>
+                <element>BuiltinQosSnippetLib::QosPolicy.Durability.TransientLocal</element>
+            </base_name>
+            <!--
+            QoS specified to override the QoS in the base profile. Configures the
+            DataWriter in the example code.
+            -->
+            <datawriter_qos>
+                <publication_name>
+                    <name>IDSWriter</name>
+                </publication_name>
+            </datawriter_qos>
+
+            <!--
+            QoS specified to override the QoS in the base profile. Configures the
+            DomainParticipant in the example code.
+            -->
+            <domain_participant_qos>
+                <!--
+                The participant name, if it is set, will be displayed in the RTI
+                tools, making it easier for you to tell one application from 
+                another when you're debugging.
+                -->
+                <participant_name>
+                    <name>IDSParticipant</name>
+                </participant_name>
+                <!--
+                Security file locations used by this participant.
+                -->
+                <property>
+                    <value>
+                        <!--
+                        Location of the public identity certificate of this
+                        participant. It should be derived from the identity ca defined
+                        in the root profile. Make sure that this points to the correct
+                        relative path compared to this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.auth.identity_certificate</name>
+                            <value>file:../config/cert/pmi/identities/IDS/pmiIDSCert.pem</value>
+                        </element>
+                        <!--
+                        Location of the private key for this participant. Make sure
+                        that this points to the correct relative path compared to
+                        this XML file.
+                        -->
+                        <element>
+                            <name>dds.sec.auth.private_key</name>
+                            <value>file:../config/cert/pmi/identities/IDS/private/pmiIDSKey.pem</value>
+                        </element>
+                        <!--
+                        Location of the signed Permission file. Make sure that this
+                        points to the correct relative path compared to this XML
+                        file.
+                        -->
+                        <element>
+                            <name>dds.sec.access.permissions</name>
+                            <value>file:../config/xml/security/signed/signed_pmiIDS.p7s</value>
+                        </element>
+                    </value>
+                </property>
+            </domain_participant_qos>
+        </qos_profile>
+    </qos_library>
+</dds>

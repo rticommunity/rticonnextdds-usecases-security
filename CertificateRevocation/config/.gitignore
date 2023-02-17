@@ -1,0 +1,14 @@
+## Ignore all script results, including generated certificates and signatures
+
+# Ignore generated keys
+*.pem
+*.csr
+
+# Ignore signed documents
+*.p7s
+
+# Ignore generated directories
+database/
+private/
+temporary_files/
+crl/
